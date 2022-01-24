@@ -1,3 +1,5 @@
+# Lasted wrapper version: https://github.com/Its-Vichy/Guildead
+
 import requests, uuid, random, string
 
 class Exploit:
