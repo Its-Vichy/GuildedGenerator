@@ -14,7 +14,7 @@ class Gmail:
 
         # return insert_dots(s, random.randint(1, len(s) - 3))
 
-        s = 'nokdsfuihdsufgnzeuifhiuezfbifr+'
+        s = 'email_name_replace_dont_be_dumb+'
         return s + "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]) + "@gmail.com"
 
     def get_verif_token(mail: str):
