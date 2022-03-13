@@ -125,3 +125,7 @@ class Guilded:
         
         r = self.session.put(f'{self.base_url}/teams/{team_id}/members/{user_id}/join', json={'inviteId': None})
         return r.json()
+
+    # not working for the moment
+    def add_pfp(self, image_path):
+        return self.session.post('https://media.guilded.gg/media/upload?dynamicMediaTypeId=UserAvatar', files={'file': open(image_path, 'rb').read()}, headers={'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary47tZnndaOSKfxxSv'}, stream=True)

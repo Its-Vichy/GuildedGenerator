@@ -4,6 +4,10 @@ from lib import guildead, mail
 
 __config__, lock = json.load(open('./config.json', 'r+')), threading.Lock()
 
+class Data:
+    def __init__(self):
+        self.email = mail.Gmail(__config__['mail'], __config__['password'])
+
 class Console:
     @staticmethod
     def debug(content: str):
@@ -29,10 +33,10 @@ class Console:
         ''')
 
 class Creator(threading.Thread):
-    def __init__(self, proxy: str):
+    def __init__(self, proxy: str, data: Data):
         self.api = guildead.Guilded(proxy)
-        self.mail = mail.Gmail
         self.proxy = proxy
+        self.data = data
 
         threading.Thread.__init__(self)
 
@@ -85,15 +89,16 @@ class Creator(threading.Thread):
                 verif_token= None 
                 while verif_token == None:
                     try:
-                        verif_token = self.mail.get_verif_token(mail, __config__['mail'], __config__['password'])
+                        verif_token = self.data.email.mail_list[mail.lower()]
                     except:
                         pass
+                self.data.email.mail_list.pop(mail.lower())
 
                 Console.printf(f'[*] Verification token found: {verif_token}')
                 client.get('https://www.guilded.gg/api/email/verify?token=' + verif_token, cookies= cookies).text
 
                 if self.api.check_mail_verified()['email'] == True:
-                    Console.printf(f'[+] Email verified: {username}')
+                    Console.printf(f'[>] Email verified: {username}')
                     self.api.join_server(__config__['invite_code'])
 
                     with open('./data/account.txt', 'a+') as f:
@@ -102,14 +107,15 @@ class Creator(threading.Thread):
                 Console.debug('[-] Error', success)
 
     def run(self):
-        self.create_account("".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.mail.get_mail(__config__['mail'].split('@')[0]), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
+        self.create_account("".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.data.email.get_mail(__config__['mail'].split('@')[0]), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
 
 if __name__ == '__main__':
     proxies= itertools.cycle(open('./data/proxies.txt').read().splitlines())
     Console.print_logo()
+    data = Data()
 
     while True:
         while threading.active_count() >= __config__['threads']:
             time.sleep(1)
         
-        Creator(f'http://{next(proxies)}').start()
+        Creator(f'http://{next(proxies)}', data).start()
