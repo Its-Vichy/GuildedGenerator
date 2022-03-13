@@ -1,7 +1,32 @@
-from lib import guildead, mail
 import json, threading, httpx, random, string, time, binascii, os, json, itertools
+from colorama import Fore, init; init()
+from lib import guildead, mail
 
-__config__ = json.load(open('./config.json', 'r+'))
+__config__, lock = json.load(open('./config.json', 'r+')), threading.Lock()
+
+class Console:
+    @staticmethod
+    def debug(content: str):
+        if __config__['debug']:
+            lock.acquire()
+            print(f'[DEBUG] {content}{Fore.RESET}'.replace('[+]', f'[{Fore.LIGHTGREEN_EX}+{Fore.RESET}]').replace('[*]', f'[{Fore.LIGHTYELLOW_EX}*{Fore.RESET}]').replace('[>]', f'[{Fore.CYAN}>{Fore.RESET}]').replace('[-]', f'[{Fore.RED}-{Fore.RESET}]'))
+            lock.release()
+
+    @staticmethod
+    def printf(content: str):
+        lock.acquire()
+        print(content.replace('[+]', f'[{Fore.LIGHTGREEN_EX}+{Fore.RESET}]').replace('[*]', f'[{Fore.LIGHTYELLOW_EX}*{Fore.RESET}]').replace('[>]', f'[{Fore.CYAN}>{Fore.RESET}]').replace('[-]', f'[{Fore.RED}-{Fore.RESET}]'))
+        lock.release()
+    
+    @staticmethod
+    def print_logo():
+        os.system('cls && title GuildeadGen - github.com/its-vichy' if os.name == 'nt' else 'clear')
+        print(Fore.LIGHTWHITE_EX + '''
+          _____     _ __   __            __
+         / ___/_ __(_) /__/ /__ ___ ____/ /
+        / (_ / // / / / _  / -_) _ `/ _  / 
+        \___/\_,_/_/_/\_,_/\__/\_,_/\_,_/...                           
+        ''')
 
 class Creator(threading.Thread):
     def __init__(self, proxy: str):
@@ -46,10 +71,12 @@ class Creator(threading.Thread):
             
             #client.headers['content-length'] = str(len(json.dumps(data)))
             r= client.post(f'{self.api.base_url}/users?type=email', json= data)
+            Console.debug(f'[>] {r.json()}')
+
             success, cookies = self.api.login(mail, password)
             
             if success:
-                print(f'[+] {username} has been created.')
+                Console.printf(f'[+] {username} has been created.')
 
                 data_mail= {"email": mail}
                 client.headers['content-lenght'] = str(len(json.dumps(data_mail)))
@@ -62,23 +89,24 @@ class Creator(threading.Thread):
                     except:
                         pass
 
-                print(f'[*] Verification token found: {verif_token}')
+                Console.printf(f'[*] Verification token found: {verif_token}')
                 client.get('https://www.guilded.gg/api/email/verify?token=' + verif_token, cookies= cookies).text
 
                 if self.api.check_mail_verified()['email'] == True:
-                    print(f'[+] Email verified: {username}')
+                    Console.printf(f'[+] Email verified: {username}')
                     self.api.join_server(__config__['invite_code'])
 
                     with open('./data/account.txt', 'a+') as f:
                         f.write(f'{mail}:{password}:{cookies.get("hmac_signed_session")}\n')
             else:
-                print('[-] Error', success)
+                Console.debug('[-] Error', success)
 
     def run(self):
         self.create_account("".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.mail.get_mail(__config__['mail'].split('@')[0]), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
 
 if __name__ == '__main__':
     proxies= itertools.cycle(open('./data/proxies.txt').read().splitlines())
+    Console.print_logo()
 
     while True:
         while threading.active_count() >= __config__['threads']:
