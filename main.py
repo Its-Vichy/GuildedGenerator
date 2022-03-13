@@ -2,7 +2,6 @@ from lib import guildead, mail
 import json, threading, httpx, random, string, time, binascii, os, json, itertools
 
 __config__ = json.load(open('./config.json', 'r+'))
-__THREAD__, __INVITE__, __REFERRER__, __EMAIL__, __PASSWORD__ = __config__['threads'], __config__['invite_code'], __config__['referer'], __config__['mail'], __config__['password']
 
 class Creator(threading.Thread):
     def __init__(self, proxy: str):
@@ -13,7 +12,7 @@ class Creator(threading.Thread):
         threading.Thread.__init__(self)
 
     def create_account(self, username: str, mail: str, password: str):
-        data = {"extraInfo":{"platform":"electron", "referrerId": __REFERRER__}, "name": username, "email": mail,"password": password,"fullName": username}
+        data = {"extraInfo":{"platform":"electron", "referrerId": __config__['referer']}, "name": username, "email": mail,"password": password,"fullName": username}
 
         h = {
             'authority': 'www.guilded.gg',
@@ -47,9 +46,7 @@ class Creator(threading.Thread):
             
             #client.headers['content-length'] = str(len(json.dumps(data)))
             r= client.post(f'{self.api.base_url}/users?type=email', json= data)
-            print(r.json())    
             success, cookies = self.api.login(mail, password)
-            print(cookies)
             
             if success:
                 print(f'[+] {username} has been created.')
@@ -61,7 +58,7 @@ class Creator(threading.Thread):
                 verif_token= None 
                 while verif_token == None:
                     try:
-                        verif_token = self.mail.get_verif_token(mail, __EMAIL__, __PASSWORD__)
+                        verif_token = self.mail.get_verif_token(mail, __config__['mail'], __config__['password'])
                     except:
                         pass
 
@@ -70,7 +67,7 @@ class Creator(threading.Thread):
 
                 if self.api.check_mail_verified()['email'] == True:
                     print(f'[+] Email verified: {username}')
-                    self.api.join_server(__INVITE__)
+                    self.api.join_server(__config__['invite_code'])
 
                     with open('./data/account.txt', 'a+') as f:
                         f.write(f'{mail}:{password}:{cookies.get("hmac_signed_session")}\n')
@@ -78,14 +75,13 @@ class Creator(threading.Thread):
                 print('[-] Error', success)
 
     def run(self):
-        self.create_account("".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.mail.get_mail(__EMAIL__.split('@')[0]), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
+        self.create_account("".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.mail.get_mail(__config__['mail'].split('@')[0]), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
 
 if __name__ == '__main__':
     proxies= itertools.cycle(open('./data/proxies.txt').read().splitlines())
 
-    for _ in range(__THREAD__):
-        while True:
-            while threading.active_count() >= __THREAD__:
-                time.sleep(1)
-            
-            Creator(f'http://{next(proxies)}').start()
+    while True:
+        while threading.active_count() >= __config__['threads']:
+            time.sleep(1)
+        
+        Creator(f'http://{next(proxies)}').start()
