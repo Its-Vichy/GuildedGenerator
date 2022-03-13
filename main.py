@@ -1,7 +1,8 @@
 from lib import guildead, mail
-import json, threading, httpx, random, string, time, binascii, os
+import json, threading, httpx, random, string, time, binascii, os, json, itertools
 
-__THREAD__, __INVITE__, __REFERRER__ = 1, "2ZvgQvy2", "d5D2Q0V4"
+__config__ = json.load(open('./config.json', 'r+'))
+__THREAD__, __INVITE__, __REFERRER__, __EMAIL__, __PASSWORD__ = __config__['threads'], __config__['invite_code'], __config__['referer'], __config__['mail'], __config__['password']
 
 class Creator(threading.Thread):
     def __init__(self, proxy: str):
@@ -44,7 +45,7 @@ class Creator(threading.Thread):
         with httpx.Client(proxies= self.proxy, headers= h) as client:
             client.cookies = client.put('https://www.guilded.gg/api/data/event').cookies
             
-            client.headers['content-length'] = str(len(json.dumps(data)))
+            #client.headers['content-length'] = str(len(json.dumps(data)))
             r= client.post(f'{self.api.base_url}/users?type=email', json= data)
             print(r.json())    
             success, cookies = self.api.login(mail, password)
@@ -59,7 +60,7 @@ class Creator(threading.Thread):
                 verif_token= None 
                 while verif_token == None:
                     try:
-                        verif_token = self.mail.get_verif_token(mail)
+                        verif_token = self.mail.get_verif_token(mail, __EMAIL__, __PASSWORD__)
                     except:
                         pass
 
@@ -76,9 +77,14 @@ class Creator(threading.Thread):
                 print('[-] Error', success)
 
     def run(self):
-        while True:
-            self.create_account("".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.mail.get_mail(), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
+        self.create_account("".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.mail.get_mail(__EMAIL__.split('@')[0]), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
 
-proxies= open('./data/proxies.txt').read().split('\n')
-for _ in range(__THREAD__):
-    Creator('http://'+ random.choice(proxies).split('\n')[0]).start()
+if __name__ == '__main__':
+    proxies= itertools.cycle(open('./data/proxies.txt').read().splitlines())
+
+    for _ in range(__THREAD__):
+        while True:
+            while threading.active_count() >= __THREAD__:
+                time.sleep(1)
+            
+            Creator(f'http://{next(proxies)}').start()

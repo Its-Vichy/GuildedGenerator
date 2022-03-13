@@ -2,25 +2,13 @@ from imap_tools import MailBox
 import random, string
 
 class Gmail:
-    def get_mail():
-        def insert_dots(s, k):
-            indices = sorted(random.sample(range(1, len(s) - 1), k))
-            intervals = []
+    def get_mail(mail_base: str):        
+        return mail_base + "+" + "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]) + "@gmail.com"
 
-            for i, j in zip([0] + indices, indices + [len(s)]):
-                intervals.append(s[i:j])
-
-            return '.'.join(intervals) + "@gmail.com"
-
-        # return insert_dots(s, random.randint(1, len(s) - 3))
-
-        s = 'email_name_replace_dont_be_dumb+'
-        return s + "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]) + "@gmail.com"
-
-    def get_verif_token(mail: str):
-        with MailBox('imap.gmail.com', '993').login('email@gmail.com', 'password', 'INBOX') as mailbox:
+    def get_verif_token(fake_mail: str, mail: str, password: str):
+        with MailBox('imap.gmail.com', '993').login(mail, password, 'INBOX') as mailbox:
             for msg in mailbox.fetch():
-                if msg.to[0] == mail:
+                if str(msg.to[0]).lower() == fake_mail.lower():
                     body = msg.html
                     verif = body.split('https://www.guilded.gg/api/email/verify?token=')[1].split('"')[0]
                     return verif

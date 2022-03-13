@@ -1,5 +1,4 @@
 @echo off
-cd ..
 cls
-python main.py
+python ../main.py
 pause
