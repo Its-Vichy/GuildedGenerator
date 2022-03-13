@@ -2,8 +2,9 @@
     "invite_code": "",
     "referer": "d5D2Q0V4",
 
-    "threads": 4,
+    "threads": 3,
+    "debug": false,
 
-    "mail": "xxxxxxxxxxxxxxxxxx@gmail.com",
+    "mail": "xx@gmail.com",
     "password": ""
 }
