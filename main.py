@@ -49,6 +49,7 @@ class Creator(threading.Thread):
             r= client.post(f'{self.api.base_url}/users?type=email', json= data)
             print(r.json())    
             success, cookies = self.api.login(mail, password)
+            print(cookies)
             
             if success:
                 print(f'[+] {username} has been created.')
@@ -72,7 +73,7 @@ class Creator(threading.Thread):
                     self.api.join_server(__INVITE__)
 
                     with open('./data/account.txt', 'a+') as f:
-                        f.write(f'{mail}:{password}\n')
+                        f.write(f'{mail}:{password}:{cookies.get("hmac_signed_session")}\n')
             else:
                 print('[-] Error', success)
 
