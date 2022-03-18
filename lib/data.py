@@ -7,6 +7,7 @@ class Data:
     def __init__(self) -> None:
         self.generated = 0
         self.verified  = 0
+        self.banned    = 0
 
         self.email = mail.Gmail(__config__['mail'], __config__['password'])
         self.usernames = itertools.cycle(open('./data/usernames.txt', 'r+', encoding= 'utf-8', errors= 'ignore').read().splitlines())
@@ -16,5 +17,5 @@ class Data:
     def update_title_thread(self) -> None:
         if os.name == 'nt':
             while True:
-                os.system(f'title GuildeadGen - github.com/its-vichy ^| Generated: {self.generated} - Verified: {self.verified}')
+                os.system(f'title GuildeadGen - github.com/its-vichy ^| Generated: {self.generated} - Verified: {self.verified} - Banned: {self.banned} - Threads: {threading.active_count()}')
                 time.sleep(1)
