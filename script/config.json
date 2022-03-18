@@ -5,6 +5,8 @@
     "custom_usernames": true,
     "save_cookies_separated": true,
     
+    "proxyless": false,
+    
     "threads": 35,
     "debug": false,
 
