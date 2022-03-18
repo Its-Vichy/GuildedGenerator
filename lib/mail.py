@@ -1,5 +1,6 @@
-from imap_tools import MailBox
 import random, string, threading, time
+from lib.console import Console
+from imap_tools import MailBox
 
 class Gmail:
     def __init__(self, mail: str, password: str) -> None:
@@ -23,7 +24,7 @@ class Gmail:
                             self.mail_list[to] = verif
                             self.blacklist.append(to)
                     except Exception as e:
-                        print(e)
+                        Console.debug(f'[-] Mail error: {e}')
             time.sleep(1)
     
     @staticmethod

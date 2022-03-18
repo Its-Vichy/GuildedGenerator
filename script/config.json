@@ -2,7 +2,10 @@
     "invite_code": "",
     "referer": "d5D2Q0V4",
 
-    "threads": 3,
+    "custom_usernames": true,
+    "save_cookies_separated": true,
+    
+    "threads": 35,
     "debug": false,
 
     "mail": "xx@gmail.com",
