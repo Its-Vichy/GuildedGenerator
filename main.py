@@ -56,6 +56,7 @@ class Creator(threading.Thread):
                 
                 if success:
                     Console.printf(f'[+] {username} has been created.')
+                    self.data.generated += 1
 
                     data_mail= {"email": mail}
                     client.headers['content-lenght'] = str(len(json.dumps(data_mail)))
@@ -75,6 +76,7 @@ class Creator(threading.Thread):
 
                     if self.api.check_mail_verified()['email'] == True:
                         Console.printf(f'[>] Email verified: {username}')
+                        self.data.verified += 1
 
                         if __config__['invite_code'] != '':
                             self.api.join_server(__config__['invite_code'])
