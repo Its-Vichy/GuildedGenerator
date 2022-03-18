@@ -15,7 +15,7 @@ class Creator(threading.Thread):
         threading.Thread.__init__(self)
 
     def create_account(self, username: str, mail: str, password: str) -> None:
-        data = {"extraInfo":{"platform": "electron", "referrerId": __config__['referer']}, "name": username, "email": mail,"password": password,"fullName": username}
+        data = {"extraInfo":{"platform": "desktop", "referrerId": __config__['referer']}, "name": username, "email": mail,"password": password,"fullName": username}
 
         h = {
             'authority': 'www.guilded.gg',
@@ -50,7 +50,13 @@ class Creator(threading.Thread):
                 
                 #client.headers['content-length'] = str(len(json.dumps(data)))
                 r= client.post(f'{self.api.base_url}/users?type=email', json= data)
-                Console.debug(f'[>] {r.json()}')
+
+                if 'You have been banned.' in r.text:
+                    self.data.banned += 1
+                    Console.debug(f'[>] Banned')
+                    return
+                else:
+                    Console.debug(f'[>] {r.json()}')
 
                 success, cookies = self.api.login(mail, password)
                 
@@ -88,20 +94,22 @@ class Creator(threading.Thread):
                             with open('./data/cookies.txt', 'a+') as f:
                                 f.write(f'{cookies.get("hmac_signed_session")}\n')
                 else:
-                    Console.debug('[-] Error', success)
+                    Console.debug(f'[-] Error when logged in: {success}')
         except Exception as e:
             Console.debug(f'[*] Creation error: {e}')
 
     def run(self) -> None:
         self.create_account(next(self.data.usernames) if __config__['custom_usernames'] == True else "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.data.email.get_mail(__config__['mail'].split('@')[0]), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
 
+
 if __name__ == '__main__':
+    
     proxies= itertools.cycle(open('./data/proxies.txt').read().splitlines())
     Console.print_logo()
     data = Data()
-
+    
     while True:
         while threading.active_count() >= __config__['threads']:
             time.sleep(1)
         
-        Creator(f'http://{next(proxies)}', data).start()
+        Creator(f'http://{next(proxies)}' if __config__['proxyless'] == False else None, data).start()
