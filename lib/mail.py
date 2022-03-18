@@ -13,19 +13,22 @@ class Gmail:
     
     def parser_thread(self) -> None:
         while True:
-            with MailBox('imap.gmail.com', '993').login(self.mail, self.password, 'INBOX') as mailbox:
-                for msg in mailbox.fetch():
-                    try:
-                        body = msg.html
-                        to = str(msg.to[0]).lower()
+            try:
+                with MailBox('imap.gmail.com', '993').login(self.mail, self.password, 'INBOX') as mailbox:
+                    for msg in mailbox.fetch():
+                        try:
+                            body = msg.html
+                            to = str(msg.to[0]).lower()
 
-                        if to not in self.blacklist:
-                            verif = body.split('https://www.guilded.gg/api/email/verify?token=')[1].split('"')[0]
-                            self.mail_list[to] = verif
-                            self.blacklist.append(to)
-                    except Exception as e:
-                        Console.debug(f'[-] Mail error: {e}')
-            time.sleep(1)
+                            if to not in self.blacklist:
+                                verif = body.split('https://www.guilded.gg/api/email/verify?token=')[1].split('"')[0]
+                                self.mail_list[to] = verif
+                                self.blacklist.append(to)
+                        except Exception as e:
+                            Console.debug(f'[-] Mail error: {e}')
+                time.sleep(1)
+            except Exception as e:
+                Console.debug(f'[-] Error when connecting to imap server: {e}')
     
     @staticmethod
     def get_mail(mail_base: str) -> str:        
