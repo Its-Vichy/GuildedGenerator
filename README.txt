@@ -2,7 +2,8 @@
 
 - Add your proxies in data/proxies.txt.
 - Edit the config file.
-- Add thread number / invite / referer (or but my referer <3).
+- Add thread number / invite / referer (or put my referer <3).
+- Run install.bat
 
 - To extract new hmac cookie you can use my guildead wrapper.
 - You must activate untrusted app on your gmail account.
