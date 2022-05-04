@@ -126,6 +126,56 @@ class Guilded:
         r = self.session.put(f'{self.base_url}/teams/{team_id}/members/{user_id}/join', json={'inviteId': None})
         return r.json()
 
-    # not working for the moment
-    def add_pfp(self, image_path):
-        return self.session.post('https://media.guilded.gg/media/upload?dynamicMediaTypeId=UserAvatar', files={'file': open(image_path, 'rb').read()}, headers={'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary47tZnndaOSKfxxSv'}, stream=True)
+    def set_activity(self, number: int = 1):
+        # online, idle, dnd
+
+        r = self.session.post(f'{self.base_url}/users/me/presence', json={'status': number})
+        return r.json()
+    
+    def ping(self):
+        r = self.session.put(f'{self.base_url}/users/me/ping', json={})
+        return r.json()
+    
+    def set_status(self, text: str, customReactionId: int = 90002573):
+        r = self.session.post(f'{self.base_url}/users/me/status', json={
+            "content": {
+                "object": "value",
+                "document": {
+                    "object": "document",
+                    "data": {},
+                    "nodes": [
+                        {
+                            "object": "block",
+                            "type": "paragraph",
+                            "data": {},
+                            "nodes": [
+                                {
+                                    "object": "text",
+                                    "leaves": [
+                                        {
+                                            "object": "leaf",
+                                            "text": text,
+                                            "marks": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "customReactionId": customReactionId,
+            "expireInMs": 0
+        })
+        return r.json()
+    
+    def set_bio(self, text: str):
+        user_id = self.user['id']
+
+        r = self.session.put(f'{self.base_url}/users/{user_id}/profilev2', json={"userId": user_id,"aboutInfo":{"tagLine": text}})
+        return r.json()
+
+    def add_pfp(self, url):
+        #url = self.session.post('https://media.guilded.gg/media/upload?dynamicMediaTypeId=UserAvatar', files={'file': open(image_path, 'rb')}, headers={'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary20al5Fdtd69OqIRT'}).json()
+        
+        return self.session.post(f'{self.base_url}/users/me/profile/images', json={'imageUrl': url})

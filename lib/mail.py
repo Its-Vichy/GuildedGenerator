@@ -1,6 +1,8 @@
-import random, string, threading, time
+import random, string, threading, time, json
 from lib.console import Console
 from imap_tools import MailBox
+
+__config__ = json.load(open('./config.json', 'r+'))
 
 class Gmail:
     def __init__(self, mail: str, password: str) -> None:
@@ -24,6 +26,10 @@ class Gmail:
                                 verif = body.split('https://www.guilded.gg/api/email/verify?token=')[1].split('"')[0]
                                 self.mail_list[to] = verif
                                 self.blacklist.append(to)
+
+                                if __config__['delete_verification_email']:
+                                    mailbox.delete(msg.uid)
+                                    Console.debug(f'[>] Delete email: {msg.uid}')
                         except Exception as e:
                             Console.debug(f'[-] Mail error: {e}')
                 time.sleep(1)

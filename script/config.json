@@ -1,15 +1,23 @@
 {
-    "invite_code": "",
+    "invite_code": "k1brO8zp",
     "referer": "d5D2Q0V4",
 
     "custom_usernames": true,
+    "custom_status": true,
+    "custom_bio": false,
+
+    "set_online": true,
+    "set_status": true,
+    "set_bio": true,
+    "set_pfp": true,
+
+    "delete_verification_email": true,
     "save_cookies_separated": true,
-    
     "proxyless": false,
     
-    "threads": 35,
+    "threads": 25,
     "debug": false,
 
-    "mail": "xx@gmail.com",
-    "password": ""
+    "mail": "aa@gmail.com",
+    "password": "good pass sir"
 }

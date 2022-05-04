@@ -1,4 +1,4 @@
-import json, itertools, threading, time, os
+import json, itertools, threading, time, os, httpx
 from lib import mail
 
 __config__ = json.load(open('./config.json', 'r+'))
@@ -11,8 +11,14 @@ class Data:
 
         self.email = mail.Gmail(__config__['mail'], __config__['password'])
         self.usernames = itertools.cycle(open('./data/usernames.txt', 'r+', encoding= 'utf-8', errors= 'ignore').read().splitlines())
+        self.status = itertools.cycle(open('./data/status.txt', 'r+', encoding= 'utf-8', errors= 'ignore').read().splitlines())
+        self.bio = itertools.cycle(open('./data/bio.txt', 'r+', encoding= 'utf-8', errors= 'ignore').read().splitlines())
+        self.pfp = itertools.cycle(open('./data/pfp.txt', 'r+', encoding= 'utf-8', errors= 'ignore').read().splitlines())
 
         threading.Thread(target= self.update_title_thread).start()
+    
+    def get_bio(self, proxy: str=None) -> str:
+        return httpx.get('https://free-quotes-api.herokuapp.com', proxies=proxy, timeout=30).json()['quote']
 
     def update_title_thread(self) -> None:
         if os.name == 'nt':

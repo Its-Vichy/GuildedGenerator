@@ -14,6 +14,9 @@ class Creator(threading.Thread):
 
         threading.Thread.__init__(self)
 
+    def get_rstr(self, lenght: int) -> str:
+        return str(binascii.b2a_hex(os.urandom(lenght)).decode('utf-8'))
+
     def create_account(self, username: str, mail: str, password: str) -> None:
         data = {"extraInfo":{"platform": "desktop", "referrerId": __config__['referer']}, "name": username, "email": mail,"password": password,"fullName": username}
 
@@ -27,10 +30,10 @@ class Creator(threading.Thread):
             'accept-encoding': 'gzip, deflate, br',
             'accept-language': 'fr-FR,fr;q=0.9',
             'content-type': 'application/json',
-            'guilded-client-id': 'e9a9790a-32b9-4217-997e-d0ea56ee5675',
-            'guilded-device-id': str(binascii.b2a_hex(os.urandom(64)).decode('utf-8')),
+            'guilded-client-id': f'{self.get_rstr(8)}-{self.get_rstr(4)}-{self.get_rstr(4)}-{self.get_rstr(4)}-{self.get_rstr(12)}',
+            'guilded-device-id': self.get_rstr(64),
             'guilded-device-type': 'desktop',
-            'guilded-stag': str(binascii.b2a_hex(os.urandom(32)).decode('utf-8')),
+            'guilded-stag': self.get_rstr(32),
             'origin': 'https://www.guilded.gg',
             'referer': 'https://www.guilded.gg/',
             'sec-fetch-dest': 'empty',
@@ -65,8 +68,10 @@ class Creator(threading.Thread):
                     self.data.generated += 1
 
                     data_mail= {"email": mail}
-                    client.headers['content-lenght'] = str(len(json.dumps(data_mail)))
+                    #client.headers['content-lenght'] = str(len(json.dumps(data_mail)))
                     client.post(f'{self.api.base_url}/email/verify', json= data_mail, cookies= cookies)
+                    
+                    #client.headers.pop('content-lenght')
 
                     verif_token= None 
                     while verif_token == None:
@@ -80,7 +85,7 @@ class Creator(threading.Thread):
                     Console.printf(f'[*] Verification token found: {verif_token}')
                     client.get('https://www.guilded.gg/api/email/verify?token=' + verif_token, cookies= cookies).text
 
-                    if self.api.check_mail_verified()['email'] == True:
+                    if self.api.check_mail_verified()['email']:
                         Console.printf(f'[>] Email verified: {username}')
                         self.data.verified += 1
 
@@ -90,9 +95,26 @@ class Creator(threading.Thread):
                         with open('./data/account.txt', 'a+') as f:
                             f.write(f'{mail}:{password}:{cookies.get("hmac_signed_session")}\n')
                         
-                        if __config__['save_cookies_separated'] == True:
+                        if __config__['save_cookies_separated']:
                             with open('./data/cookies.txt', 'a+') as f:
                                 f.write(f'{cookies.get("hmac_signed_session")}\n')
+                        
+                        if __config__['set_online']:
+                            Console.printf(f'[~] Set online: {username}')
+                            self.api.set_activity(random.randint(1, 3))
+                            self.api.ping()
+
+                        if __config__['set_status']:
+                            Console.printf(f'[~] Set status: {username}')
+                            self.api.set_status(next(self.data.status) if __config__['custom_status'] else 'GuildeadGen - github.com/its-vichy')
+                        
+                        if __config__['set_bio']:
+                            Console.printf(f'[~] Set bio: {username}')
+                            self.api.set_bio(next(self.data.bio) if __config__['custom_bio'] else self.data.get_bio(self.proxy))
+                        
+                        if __config__['set_pfp']:
+                            Console.printf(f'[~] Set pfp: {username}')
+                            self.api.add_pfp(next(self.data.pfp))
                 else:
                     Console.debug(f'[-] Error when logged in: {success}')
         except Exception as e:
