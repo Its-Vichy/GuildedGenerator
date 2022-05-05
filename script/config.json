@@ -18,6 +18,7 @@
     "threads": 25,
     "debug": false,
 
+    "use_tempmail": true,
     "mail": "aa@gmail.com",
     "password": "good pass sir"
 }
