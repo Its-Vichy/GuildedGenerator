@@ -9,7 +9,7 @@ class Data:
         self.verified  = 0
         self.banned    = 0
 
-        self.email = mail.Gmail(__config__['mail'], __config__['password'])
+        self.email = mail.Gmail(__config__['mail'], __config__['password']) if __config__['use_tempmail'] == False else None
         self.usernames = itertools.cycle(open('./data/usernames.txt', 'r+', encoding= 'utf-8', errors= 'ignore').read().splitlines())
         self.status = itertools.cycle(open('./data/status.txt', 'r+', encoding= 'utf-8', errors= 'ignore').read().splitlines())
         self.bio = itertools.cycle(open('./data/bio.txt', 'r+', encoding= 'utf-8', errors= 'ignore').read().splitlines())
