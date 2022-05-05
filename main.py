@@ -1,6 +1,7 @@
 import json, threading, httpx, random, string, time, binascii, os, json, itertools
 from lib.guildead import Guilded
 from lib.console import Console
+from lib.mail import MailGwApi
 from lib.data import Data
 
 __config__ = json.load(open('./config.json', 'r+'))
@@ -17,7 +18,7 @@ class Creator(threading.Thread):
     def get_rstr(self, lenght: int) -> str:
         return str(binascii.b2a_hex(os.urandom(lenght)).decode('utf-8'))
 
-    def create_account(self, username: str, mail: str, password: str) -> None:
+    def create_account(self, username: str, mail: str, password: str, tp: MailGwApi=None) -> None:
         data = {"extraInfo":{"platform": "desktop", "referrerId": __config__['referer']}, "name": username, "email": mail,"password": password,"fullName": username}
 
         h = {
@@ -77,10 +78,17 @@ class Creator(threading.Thread):
                     while verif_token == None:
                         time.sleep(1)
                         try:
-                            verif_token = self.data.email.mail_list[mail.lower()]
+                            if tp == None:
+                                verif_token = self.data.email.mail_list[mail.lower()]
+                            else:
+                                for mail in tp.fetch_inbox():
+                                    content = str(tp.get_message(mail['id'])['html'])
+                                    verif_token = content.split('https://www.guilded.gg/api/email/verify?token=')[1].split('"')[0]
                         except:
                             pass
-                    self.data.email.mail_list.pop(mail.lower())
+                    
+                    if tp == None:
+                        self.data.email.mail_list.pop(mail.lower())
 
                     Console.printf(f'[*] Verification token found: {verif_token}')
                     client.get('https://www.guilded.gg/api/email/verify?token=' + verif_token, cookies= cookies).text
@@ -121,11 +129,23 @@ class Creator(threading.Thread):
             Console.debug(f'[*] Creation error: {e}')
 
     def run(self) -> None:
-        self.create_account(next(self.data.usernames) if __config__['custom_usernames'] == True else "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), self.data.email.get_mail(__config__['mail'].split('@')[0]), "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]))
+        password = "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)])
+
+        if __config__['use_tempmail']:
+            api = MailGwApi(proxy= self.proxy, timeout=30)
+
+            email = api.get_mail(domain='bluebasketbooks.com.au')
+            
+            if email == None:
+                return
+
+            self.create_account(next(self.data.usernames) if __config__['custom_usernames'] == True else "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), email, password, api)
+        else:
+            email    = self.data.email.get_mail(__config__['mail'].split('@')[0])
+            self.create_account(next(self.data.usernames) if __config__['custom_usernames'] == True else "".join([random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)]), email, password)
 
 
 if __name__ == '__main__':
-    
     proxies= itertools.cycle(open('./data/proxies.txt').read().splitlines())
     Console.print_logo()
     data = Data()
