@@ -81,8 +81,8 @@ class Creator(threading.Thread):
                             if tp == None:
                                 verif_token = self.data.email.mail_list[mail.lower()]
                             else:
-                                for mail in tp.fetch_inbox():
-                                    content = str(tp.get_message(mail['id'])['html'])
+                                for mails in tp.fetch_inbox():
+                                    content = str(tp.get_message(mails['id'])['html'])
                                     verif_token = content.split('https://www.guilded.gg/api/email/verify?token=')[1].split('"')[0]
                         except:
                             pass
