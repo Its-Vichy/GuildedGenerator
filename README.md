@@ -20,10 +20,6 @@
 
 -----
 
-after will have fucked guilded and everybody can't create account, they block the mail domain + dottrick (i don't recieve mail anymore), so this repo is """""patched"""""
-
------
-
 ```json
 {
     "invite_code": "",        Your server invite code NOT LINK
