@@ -1,7 +1,7 @@
 from colorama import Fore, init; init()
 import threading, json, os
 
-__config__ = json.load(open('./config.json', 'r+'))
+__config__ = json.load(open('./script/config.json', 'r+'))
 lock = threading.Lock()
 
 class Console:

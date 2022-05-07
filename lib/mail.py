@@ -2,7 +2,7 @@ import random, string, threading, time, json, httpx
 from lib.console import Console
 from imap_tools import MailBox
 
-__config__ = json.load(open('./config.json', 'r+'))
+__config__ = json.load(open('./script/config.json', 'r+'))
 
 class Gmail:
     def __init__(self, mail: str, password: str) -> None:
@@ -43,7 +43,7 @@ class Gmail:
 class MailGwApi:
     def __init__(self, proxy: str= None, timeout: int=15) -> None:
         self.session = httpx.Client(headers={'content-type': 'application/json'}, timeout=timeout, proxies=proxy)
-        self.base_url = 'https://api.mail.gw'
+        self.base_url = 'https://api.mail.tm'
     
     def get_domains(self) -> list:
         domains: list = []
@@ -54,16 +54,16 @@ class MailGwApi:
         return domains
 
     def get_mail(self, password: str= None, domain: str = None) -> str:
-        mail: str =  f'{"".join(random.choice(string.ascii_lowercase) for _ in range(15))}@{domain if domain != None else self.get_domains()[0]}'
-        response: int = self.session.post(f'{self.base_url}/accounts', json={'address': mail, 'password': mail if password == None else password})
+        mail: str =  f'{"".join(random.choice(string.ascii_lowercase) for _ in range(15))}@{domain if domain is not None else self.get_domains()[0]}'
+        response: httpx.Response = self.session.post(f'{self.base_url}/accounts', json={'address': mail, 'password': mail if password is None else password})
 
         try:
             if response.status_code == 201:
-                token = self.session.post(f'{self.base_url}/token', json={'address': mail, 'password': mail if password == None else password}).json()['token']
+                token = self.session.post(f'{self.base_url}/token', json={'address': mail, 'password': mail if password is None else password}).json()['token']
                 self.session.headers['authorization'] = f'Bearer {token}'
                 return mail
-        except:
-            return 'Email creation error.'
+        except Exception as e:
+            return f'Email creation error. ({e})'
     
     def fetch_inbox(self):
         response = self.session.get(f'{self.base_url}/messages').json()['hydra:member']

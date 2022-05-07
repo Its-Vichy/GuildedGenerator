@@ -3,7 +3,8 @@
 import requests, uuid, random, string
 
 class Exploit:
-    def blank_message():
+    @staticmethod
+    def blank_message() -> list:
         return [random.choice(string.ascii_letters + string.ascii_uppercase + string.digits) for _ in range(random.randint(1000, 1000))]
 
 class Guilded:
